@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -164,5 +164,21 @@ public class TaskControllerIntegrationTest {
         assertEquals(entityStatus, savedTask.getStatus(), "Status should not have been updated");
     }
 
+    @Test
+    public void testDeleteTask_happyPath() throws Exception {
+        mockMvc.perform(delete("/" + entityId))
+                .andExpect(status().isNoContent());
 
+        Optional<Task> optionalTask = repository.findById(entityId);
+        assertFalse(optionalTask.isPresent(), "Task should have been deleted");
+    }
+
+    @Test
+    public void testDeleteTask_invalidId_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(delete("/" + entityId + 1))
+                .andExpect(status().isNotFound());
+
+        Optional<Task> optionalTask = repository.findById(entityId);
+        assertTrue(optionalTask.isPresent(), "Task should not have been deleted");
+    }
 }

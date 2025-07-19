@@ -55,4 +55,14 @@ public class TaskService {
 
         return taskRepository.save(task);
     }
+
+    public void deleteTask(long id) {
+        Optional<Task> taskOptional = taskRepository.findById(id);
+
+        if (taskOptional.isEmpty()) {
+            throw new NoSuchElementException("No task found with id " + id);
+        }
+
+        taskRepository.delete(taskOptional.get());
+    }
 }

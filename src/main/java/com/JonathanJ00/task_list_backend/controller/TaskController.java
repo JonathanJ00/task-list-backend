@@ -1,7 +1,7 @@
 package com.JonathanJ00.task_list_backend.controller;
 
-import com.JonathanJ00.task_list_backend.dto.TaskResponse;
 import com.JonathanJ00.task_list_backend.dto.SaveTaskRequest;
+import com.JonathanJ00.task_list_backend.dto.TaskResponse;
 import com.JonathanJ00.task_list_backend.dto.UpdateTaskRequest;
 import com.JonathanJ00.task_list_backend.entity.Task;
 import com.JonathanJ00.task_list_backend.service.TaskService;
@@ -49,6 +49,16 @@ public class TaskController {
         try {
             Task updatedTask = taskService.updateTask(id, request);
             return ResponseEntity.ok(new TaskResponse(updatedTask));
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTask(@PathVariable long id) {
+        try {
+            taskService.deleteTask(id);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
