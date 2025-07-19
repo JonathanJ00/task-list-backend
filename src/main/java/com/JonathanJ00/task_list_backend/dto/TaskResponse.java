@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
-public class GetTaskResponse {
+public class TaskResponse {
     private long id;
     private String title;
     private String description;
@@ -15,7 +15,7 @@ public class GetTaskResponse {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime date;
 
-    public GetTaskResponse(Task task) {
+    public TaskResponse(Task task) {
         this.id = task.getId();
         this.title = task.getTitle();
         this.description = task.getDescription();

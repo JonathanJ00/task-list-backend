@@ -1,6 +1,6 @@
 package com.JonathanJ00.task_list_backend.controller;
 
-import com.JonathanJ00.task_list_backend.dto.GetTaskResponse;
+import com.JonathanJ00.task_list_backend.dto.TaskResponse;
 import com.JonathanJ00.task_list_backend.dto.SaveTaskRequest;
 import com.JonathanJ00.task_list_backend.dto.UpdateTaskRequest;
 import com.JonathanJ00.task_list_backend.entity.Task;
@@ -31,24 +31,24 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetTaskResponse> getTask(@PathVariable long id) {
+    public ResponseEntity<TaskResponse> getTask(@PathVariable long id) {
         try {
-            return ResponseEntity.ok(new GetTaskResponse(taskService.getTaskById(id)));
+            return ResponseEntity.ok(new TaskResponse(taskService.getTaskById(id)));
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
     @GetMapping("/tasks")
-    public List<GetTaskResponse> getAllTasks() {
-        return taskService.getAllTasks().stream().map(GetTaskResponse::new).collect(Collectors.toList());
+    public List<TaskResponse> getAllTasks() {
+        return taskService.getAllTasks().stream().map(TaskResponse::new).collect(Collectors.toList());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GetTaskResponse> updateTask(@PathVariable long id, @RequestBody @Valid UpdateTaskRequest request) {
+    public ResponseEntity<TaskResponse> updateTask(@PathVariable long id, @RequestBody @Valid UpdateTaskRequest request) {
         try {
             Task updatedTask = taskService.updateTask(id, request);
-            return ResponseEntity.ok(new GetTaskResponse(updatedTask));
+            return ResponseEntity.ok(new TaskResponse(updatedTask));
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
