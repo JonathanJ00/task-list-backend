@@ -5,6 +5,7 @@ import com.JonathanJ00.task_list_backend.entity.Task;
 import com.JonathanJ00.task_list_backend.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -35,5 +36,9 @@ public class TaskService {
         }
 
         return taskOptional.get();
+    }
+
+    public List<Task> getAllTasks() {
+        return taskRepository.findAll();
     }
 }

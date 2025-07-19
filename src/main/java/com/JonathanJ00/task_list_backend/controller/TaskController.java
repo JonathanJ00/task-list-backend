@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @RestController
 public class TaskController {
@@ -33,5 +35,10 @@ public class TaskController {
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
+    }
+
+    @GetMapping("/tasks")
+    public List<GetTaskResponse> getAllTasks() {
+        return taskService.getAllTasks().stream().map(GetTaskResponse::new).collect(Collectors.toList());
     }
 }

@@ -116,4 +116,16 @@ public class TaskControllerIntegrationTest {
         mockMvc.perform(get("/" + entityId + 1))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    public void testGetAllTasks_happyPath() throws Exception {
+        mockMvc.perform(get("/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("[0].id").value(entityId))
+                .andExpect(jsonPath("[0].title").value(entityTitle))
+                .andExpect(jsonPath("[0].description").value(entityDescription))
+                .andExpect(jsonPath("[0].status").value(entityStatus.toString()))
+                .andExpect(jsonPath("[0].date").value(entityDueDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+
+    }
 }
