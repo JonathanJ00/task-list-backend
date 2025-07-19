@@ -1,6 +1,7 @@
 package com.JonathanJ00.task_list_backend.service;
 
 import com.JonathanJ00.task_list_backend.dto.SaveTaskRequest;
+import com.JonathanJ00.task_list_backend.dto.UpdateTaskRequest;
 import com.JonathanJ00.task_list_backend.entity.Task;
 import com.JonathanJ00.task_list_backend.repository.TaskRepository;
 import org.springframework.stereotype.Service;
@@ -40,5 +41,18 @@ public class TaskService {
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
+    }
+
+    public Task updateTask(long id, UpdateTaskRequest request) {
+        Optional<Task> taskOptional = taskRepository.findById(id);
+
+        if (taskOptional.isEmpty()) {
+            throw new NoSuchElementException("No task found with id " + id);
+        }
+
+        Task task = taskOptional.get();
+        task.setStatus(request.getStatus());
+
+        return taskRepository.save(task);
     }
 }

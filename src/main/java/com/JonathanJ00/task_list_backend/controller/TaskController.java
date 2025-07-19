@@ -2,6 +2,8 @@ package com.JonathanJ00.task_list_backend.controller;
 
 import com.JonathanJ00.task_list_backend.dto.GetTaskResponse;
 import com.JonathanJ00.task_list_backend.dto.SaveTaskRequest;
+import com.JonathanJ00.task_list_backend.dto.UpdateTaskRequest;
+import com.JonathanJ00.task_list_backend.entity.Task;
 import com.JonathanJ00.task_list_backend.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -40,5 +42,15 @@ public class TaskController {
     @GetMapping("/tasks")
     public List<GetTaskResponse> getAllTasks() {
         return taskService.getAllTasks().stream().map(GetTaskResponse::new).collect(Collectors.toList());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<GetTaskResponse> updateTask(@PathVariable long id, @RequestBody @Valid UpdateTaskRequest request) {
+        try {
+            Task updatedTask = taskService.updateTask(id, request);
+            return ResponseEntity.ok(new GetTaskResponse(updatedTask));
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 }

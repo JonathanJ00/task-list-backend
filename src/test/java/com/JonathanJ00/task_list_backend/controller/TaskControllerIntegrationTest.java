@@ -1,6 +1,7 @@
 package com.JonathanJ00.task_list_backend.controller;
 
 import com.JonathanJ00.task_list_backend.dto.SaveTaskRequest;
+import com.JonathanJ00.task_list_backend.dto.UpdateTaskRequest;
 import com.JonathanJ00.task_list_backend.entity.Task;
 import com.JonathanJ00.task_list_backend.entity.TaskStatus;
 import com.JonathanJ00.task_list_backend.repository.TaskRepository;
@@ -18,10 +19,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -126,6 +127,42 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("[0].description").value(entityDescription))
                 .andExpect(jsonPath("[0].status").value(entityStatus.toString()))
                 .andExpect(jsonPath("[0].date").value(entityDueDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
-
     }
+
+    @Test
+    public void testUpdateTask_happyPath() throws Exception {
+        UpdateTaskRequest updateRequest = new UpdateTaskRequest();
+        updateRequest.setStatus(TaskStatus.CANCELLED);
+
+        mockMvc.perform(put("/" + entityId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(entityId))
+                .andExpect(jsonPath("title").value(entityTitle))
+                .andExpect(jsonPath("description").value(entityDescription))
+                .andExpect(jsonPath("status").value(TaskStatus.CANCELLED.toString()))
+                .andExpect(jsonPath("date").value(entityDueDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+
+        Optional<Task> optionalTask = repository.findById(entityId);
+        Task savedTask = optionalTask.get();
+        assertEquals(TaskStatus.CANCELLED, savedTask.getStatus(), "Status should have been updated");
+    }
+
+    @Test
+    public void testUpdateTask_invalidId_shouldReturnNotFound() throws Exception {
+        UpdateTaskRequest updateRequest = new UpdateTaskRequest();
+        updateRequest.setStatus(TaskStatus.CANCELLED);
+
+        mockMvc.perform(put("/" + entityId + 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isNotFound());
+
+        Optional<Task> optionalTask = repository.findById(entityId);
+        Task savedTask = optionalTask.get();
+        assertEquals(entityStatus, savedTask.getStatus(), "Status should not have been updated");
+    }
+
+
 }
