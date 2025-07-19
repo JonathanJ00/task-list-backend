@@ -15,11 +15,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -36,21 +39,35 @@ public class TaskControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final String title = "Test Title";
-    private final String description = "Test Description";
-    private final TaskStatus status = TaskStatus.CREATED;
-    private final LocalDateTime date = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+    private final String entityTitle = "Task";
+    private final String entityDescription = "Description";
+    private final TaskStatus entityStatus = TaskStatus.IN_PROGRESS;
+    private final LocalDateTime entityDueDate = LocalDateTime.of(2020, 1, 1, 0, 0);
+    private long entityId;
+    private Task task = new Task();
+
+    private final String requestTitle = "Test Title";
+    private final String requestDescription = "Test Description";
+    private final TaskStatus requestStatus = TaskStatus.CREATED;
+    private final LocalDateTime requestDate = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
     private SaveTaskRequest request = new SaveTaskRequest();
 
     @BeforeEach
     public void setUp() {
+        task.setTitle(entityTitle);
+        task.setDescription(entityDescription);
+        task.setStatus(entityStatus);
+        task.setDueDate(entityDueDate);
+
         repository.deleteAll();
+        Task savedTask = repository.save(task);
+        entityId = savedTask.getId();
         repository.flush();
 
-        request.setTitle(title);
-        request.setDescription(description);
-        request.setStatus(status);
-        request.setDate(date);
+        request.setTitle(requestTitle);
+        request.setDescription(requestDescription);
+        request.setStatus(requestStatus);
+        request.setDate(requestDate);
     }
 
     @Test
@@ -61,13 +78,13 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isCreated());
 
         List<Task> tasks = repository.findAll();
-        assertEquals(1, tasks.size(), "There should be only one task");
+        assertEquals(2, tasks.size(), "New task should have been created");
 
-        Task savedTask = tasks.getFirst();
-        assertEquals(title, savedTask.getTitle(), "Title saved incorrectly");
-        assertEquals(description, savedTask.getDescription(), "Description saved incorrectly");
-        assertEquals(status, savedTask.getStatus(), "Status saved incorrectly");
-        assertEquals(date, savedTask.getDueDate(), "Due date saved incorrectly");
+        Task savedTask = tasks.get(1);
+        assertEquals(requestTitle, savedTask.getTitle(), "Title saved incorrectly");
+        assertEquals(requestDescription, savedTask.getDescription(), "Description saved incorrectly");
+        assertEquals(requestStatus, savedTask.getStatus(), "Status saved incorrectly");
+        assertEquals(requestDate, savedTask.getDueDate(), "Due date saved incorrectly");
     }
 
     @Test
@@ -80,6 +97,23 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isBadRequest());
 
         List<Task> tasks = repository.findAll();
-        assertEquals(0, tasks.size(), "No task should exist");
+        assertEquals(1, tasks.size(), "No new task should have been created");
+    }
+
+    @Test
+    public void testGetTask_happyPath() throws Exception {
+        mockMvc.perform(get("/" + entityId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(entityId))
+                .andExpect(jsonPath("title").value(entityTitle))
+                .andExpect(jsonPath("description").value(entityDescription))
+                .andExpect(jsonPath("status").value(entityStatus.toString()))
+                .andExpect(jsonPath("date").value(entityDueDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+    }
+
+    @Test
+    public void testGetTask_invalidId_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/" + entityId + 1))
+                .andExpect(status().isNotFound());
     }
 }

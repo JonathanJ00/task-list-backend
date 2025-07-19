@@ -5,6 +5,9 @@ import com.JonathanJ00.task_list_backend.entity.Task;
 import com.JonathanJ00.task_list_backend.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 @Service
 public class TaskService {
 
@@ -22,5 +25,15 @@ public class TaskService {
         task.setDueDate(request.getDate());
 
         taskRepository.save(task);
+    }
+
+    public Task getTaskById(Long id) throws NoSuchElementException {
+        Optional<Task> taskOptional = taskRepository.findById(id);
+
+        if (taskOptional.isEmpty()) {
+            throw new NoSuchElementException("No task found with id " + id);
+        }
+
+        return taskOptional.get();
     }
 }
