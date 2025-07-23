@@ -1,0 +1,194 @@
+openapi: 3.1.0
+info:
+  title: Task List API Documentation
+  description: "This is the API documentation for the Task List application. Contains\
+    \ methods to create, retrieve, update and delete tasks within the application."
+  version: "1.0"
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /{id}:
+    get:
+      tags:
+      - task-controller
+      summary: Returns the details of a specific task
+      operationId: getTask
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the task to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Successfully retrieved the task
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        "404":
+          description: Requested task was not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+    put:
+      tags:
+      - task-controller
+      summary: Updates a task
+      operationId: updateTask
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the task to update
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskRequest"
+        required: true
+      responses:
+        "200":
+          description: Successfully updated the task
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        "404":
+          description: Task was not found using provided ID
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        "400":
+          description: Provided task details were invalid
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+    delete:
+      tags:
+      - task-controller
+      summary: Deletes a task
+      operationId: deleteTask
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the task to delete
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "204":
+          description: Successfully deleted the task
+        "404":
+          description: Task was not found using provided ID
+  /create:
+    post:
+      tags:
+      - task-controller
+      summary: Creates and saves a task with the required details.
+      operationId: saveTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveTaskRequest"
+        required: true
+      responses:
+        "201":
+          description: Task was created
+        "400":
+          description: Invalid details provided.
+  /tasks:
+    get:
+      tags:
+      - task-controller
+      summary: Returns details of all saved tasks
+      operationId: getAllTasks
+      responses:
+        "200":
+          description: Successfully retrieved all tasks
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskResponse"
+components:
+  schemas:
+    UpdateTaskRequest:
+      type: object
+      description: Request object containing information about the task to be updated.
+      properties:
+        status:
+          type: string
+          description: The new status of the task to be updated
+          enum:
+          - CREATED
+          - IN_PROGRESS
+          - COMPLETED
+          - CANCELLED
+      required:
+      - status
+    TaskResponse:
+      type: object
+      description: Request object containing information about the task returned to
+        the client.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The ID for this task
+        title:
+          type: string
+          description: The name of this task
+        description:
+          type: string
+          description: The description of this task
+        status:
+          type: string
+          description: The current status of this task
+          enum:
+          - CREATED
+          - IN_PROGRESS
+          - COMPLETED
+          - CANCELLED
+        date:
+          type: string
+          format: date-time
+          description: The date this task is due in format yyyy-MM-dd HH:mm
+    SaveTaskRequest:
+      type: object
+      description: Request object containing information about the task to be created.
+      properties:
+        title:
+          type: string
+          description: The name of the task
+        description:
+          type: string
+          description: The description of the task
+        status:
+          type: string
+          description: The status of the task
+          enum:
+          - CREATED
+          - IN_PROGRESS
+          - COMPLETED
+          - CANCELLED
+        date:
+          type: string
+          format: date-time
+          description: The date this task is due in format yyyy-MM-dd HH:mm
+      required:
+      - date
+      - status
+      - title
